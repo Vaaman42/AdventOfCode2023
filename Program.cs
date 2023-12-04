@@ -12,10 +12,103 @@ while (true)
         case "2":
             Day2();
             break;
+        case "3":
+            Day3();
+            break;
         default:
             Console.WriteLine("Error, try again.");
             break;
     }
+}
+
+void Day3()
+{
+    Console.WriteLine("Enter input\nEnter \"END\" when finished.");
+    
+    var list = new List<string>();
+    var input = Console.ReadLine();
+    
+    do
+    {
+        list.Add(input);
+        input = Console.ReadLine();
+    } while (input != "END");
+
+    var matrix = list.Select(x => x.ToCharArray()).ToArray();
+    var partSum = 0;
+    
+    var gears = new Dictionary<(int, int), Gear>();
+    
+    //Part 1
+    for (var y = 0; y < matrix.Length; y++)
+    {
+        for (var x = 0; x < matrix[y].Length; x++)
+        {
+            if (int.TryParse(matrix[y][x].ToString(), out var numericValue))
+            {
+                var endingX = x;
+                var tmpX = x;
+                while (tmpX + 1 < matrix[y].Length && int.TryParse(matrix[y][++tmpX].ToString(), out var numericValue2))
+                {
+                    numericValue *= 10;
+                    numericValue += numericValue2;
+                    endingX = tmpX;
+                }
+
+                var isPart = false;
+
+                int minY = y, maxY = y, minX = x, maxX = endingX;
+                if (minY != 0) // Check upper line for symbols
+                {
+                    minY -= 1;
+                }
+
+                if (maxY != matrix.Length - 1) // Check lower line for symbols
+                {
+                    maxY += 1;
+                }
+
+                if (minX != 0) // Check left line for symbols
+                {
+                    minX -= 1;
+                }
+
+                if (maxX != matrix[y].Length - 1) // Check right line for symbols
+                {
+                    maxX += 1;
+                }
+
+                for (var i = minY; i <= maxY; i++)
+                {
+                    for (var j = minX; j <= maxX; j++)
+                    {
+                        if (matrix[i][j] == '.')
+                            continue;
+                        if (int.TryParse(matrix[i][j].ToString(), out _))
+                            continue;
+                        if (matrix[i][j] == '*')
+                        {
+                            if (!gears.ContainsKey((i, j)))
+                                gears.Add((i, j), new Gear());
+                            gears[(i, j)].AddValue(numericValue);
+                        }
+                        isPart = true;
+                    }
+                }
+
+                if (isPart)
+                    partSum += numericValue;
+
+                x = endingX;
+            }
+        }
+    }
+    
+    //Part 2
+    var gearRatioSum = gears.Sum(g => g.Value.GearRatio);
+    
+    Console.WriteLine("PART1: " + partSum);
+    Console.WriteLine("PART2: " + gearRatioSum);
 }
 
 void Day2()
